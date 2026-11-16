@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --background: #f4f3ef;
+  --foreground: #16171b;
+  --card: #ffffff;
+  --muted: #6c6f79;
+  --line: rgba(22, 23, 27, 0.1);
+  --accent: #e8552c;
+  --accent-soft: rgba(232, 85, 44, 0.1);
+  --glow-a: rgba(255, 160, 122, 0.28);
+  --glow-b: rgba(129, 140, 248, 0.16);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0a0b0e;
+  --foreground: #f3f4f6;
+  --card: #14161b;
+  --muted: #9aa1ad;
+  --line: rgba(255, 255, 255, 0.09);
+  --accent: #ff7a4d;
+  --accent-soft: rgba(255, 122, 77, 0.14);
+  --glow-a: rgba(255, 122, 77, 0.12);
+  --glow-b: rgba(56, 189, 248, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  background-image:
+    radial-gradient(70rem 45rem at 5% -15%, var(--glow-a), transparent 65%),
+    radial-gradient(60rem 40rem at 105% -5%, var(--glow-b), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+@layer components {
+  .btn,
+  .btn-primary,
+  .btn-accent,
+  .btn-secondary,
+  .btn-danger,
+  .btn-ghost {
+    @apply inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-3.5 text-sm font-medium transition select-none;
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+    @apply disabled:pointer-events-none disabled:opacity-45;
+  }
+
+  .btn-primary {
+    @apply bg-foreground text-background hover:bg-foreground/85;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-white shadow-sm shadow-accent/30 hover:bg-accent/90;
+  }
+
+  .btn-secondary {
+    @apply bg-foreground/5 text-foreground hover:bg-foreground/10 dark:bg-white/10 dark:hover:bg-white/15;
+  }
+
+  .btn-danger {
+    @apply bg-rose-500 text-white shadow-sm shadow-rose-500/30 hover:bg-rose-600;
+  }
+
+  .btn-ghost {
+    @apply w-10 px-0 text-muted hover:bg-foreground/5 hover:text-foreground dark:hover:bg-white/10;
+  }
+
+  .field {
+    @apply w-full rounded-2xl border border-line bg-background/60 px-4 py-3 text-sm text-foreground outline-none transition;
+    @apply placeholder:text-muted/70 focus:border-accent/60 focus:ring-4 focus:ring-accent/10;
+  }
+
+  .card {
+    @apply rounded-3xl border border-line bg-card/90;
+    @apply shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_24px_60px_-45px_rgba(16,18,24,0.55)];
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes alarm-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(244, 63, 94, 0),
+      0 24px 60px -45px rgba(16, 18, 24, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(244, 63, 94, 0.14),
+      0 18px 50px -22px rgba(244, 63, 94, 0.5);
+  }
+}
+
+.alarm-card {
+  animation: alarm-glow 1.9s ease-in-out infinite;
+}
+
+@keyframes ping-dot {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-ping-dot {
+  animation: ping-dot 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .alarm-card,
+  .animate-ping-dot {
+    animation: none !important;
+  }
+}
