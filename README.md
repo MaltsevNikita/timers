@@ -24,3 +24,13 @@ npm run dev
 Если порт 3000 занят: `npm run dev:3100` (http://localhost:3100).
 
 Сборка: `npm run build && npm start`.
+
+## Деплой на GitHub Pages
+
+Статическая версия публикуется автоматически при пуше в `main`:
+
+- сайт: https://maltsevnikita.github.io/timers/
+- workflow: `.github/workflows/deploy.yml` (собирает `out/` и деплоит через GitHub Actions);
+- для подпапки `/timers` в workflow задаётся `PAGES_BASE_PATH=/timers`, локально сборка идёт без префикса;
+- проверить локально как на Pages: `$env:PAGES_BASE_PATH="/timers"; npm run build`, затем отдать `out` по пути `/timers/`.
+

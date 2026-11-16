@@ -1,9 +1,16 @@
 import type { NextConfig } from "next";
 
+// На GitHub Pages проект живёт в подпапке /timers, локально — в корне.
+const basePath = process.env.PAGES_BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  output: "export",
+  trailingSlash: true,
+  basePath,
+  assetPrefix: basePath || undefined,
+  images: {
+    unoptimized: true,
+  },
   turbopack: {
     rules: {
       "*.css": {
