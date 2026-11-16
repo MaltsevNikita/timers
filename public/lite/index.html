@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f3ef" />
+    <title>Таймеры — облегчённая версия</title>
+    <meta
+      name="description"
+      content="Несколько таймеров обратного отсчёта для старых браузеров и планшетов."
+    />
+    <link rel="icon" href="../favicon.ico" />
+    <link rel="stylesheet" href="./lite.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="header">
+        <div>
+          <span class="logo" aria-hidden="true">&#9201;</span>
+          <span class="brand">
+            <h1>Таймеры</h1>
+            <p>Облегчённая версия для старых устройств</p>
+          </span>
+        </div>
+        <a class="top-link" href="../">Полная версия</a>
+      </header>
+
+      <div class="layout">
+        <div class="col-form">
+          <form id="add-form" class="card" action="#" method="get">
+            <h2 class="section-title">Новый таймер</h2>
+
+            <label class="field-label" for="timer-name">Название</label>
+            <input
+              id="timer-name"
+              class="text-input"
+              type="text"
+              maxlength="60"
+              autocomplete="off"
+              placeholder="Например, «Чай»"
+            />
+
+            <span class="field-label">Время</span>
+            <div class="stepper">
+              <button type="button" id="minus" class="step-btn" aria-label="Уменьшить на минуту">
+                &minus;
+              </button>
+              <div class="stepper-value">
+                <input
+                  id="minutes"
+                  class="minutes-input"
+                  type="text"
+                  inputmode="numeric"
+                  value="5"
+                  aria-label="Количество минут"
+                />
+                <span class="unit">мин</span>
+              </div>
+              <button type="button" id="plus" class="step-btn" aria-label="Увеличить на минуту">
+                +
+              </button>
+            </div>
+
+            <div id="presets" class="presets"></div>
+
+            <button type="submit" class="btn btn-primary btn-wide">Добавить таймер</button>
+
+            <div class="sound">
+              <div class="sound-head">
+                <strong>Звук сигнала</strong>
+                <button type="button" id="preview" class="link-btn">Прослушать</button>
+              </div>
+
+              <div class="segmented">
+                <button type="button" id="mode-default" class="seg">Стандартный</button>
+                <button type="button" id="mode-custom" class="seg">Своя мелодия</button>
+              </div>
+
+              <div id="melody-row" class="melody-row" hidden>
+                <span id="melody-name" class="melody-name"></span>
+                <button type="button" id="melody-remove" class="link-btn danger-link">
+                  Удалить
+                </button>
+              </div>
+
+              <label class="upload">
+                <span id="upload-label">Загрузить мелодию</span>
+                <input id="file" type="file" accept="audio/*" />
+              </label>
+
+              <p id="sound-error" class="hint error" hidden></p>
+              <p class="hint">MP3, WAV, OGG или M4A до 20 МБ. Файл хранится в браузере.</p>
+            </div>
+          </form>
+        </div>
+
+        <div class="col-list">
+          <div class="list-head">
+            <h2 class="section-title">
+              Таймеры <span id="count" class="badge" hidden></span>
+            </h2>
+            <button type="button" id="clear-done" class="link-btn" hidden>
+              Убрать завершённые
+            </button>
+          </div>
+
+          <div id="empty" class="card empty">
+            <div class="empty-icon" aria-hidden="true">&#9201;</div>
+            <h3>Пока нет таймеров</h3>
+            <p>
+              Введите название, выберите минуты и нажмите «Добавить таймер». Таймеров может быть
+              сколько угодно.
+            </p>
+          </div>
+
+          <div id="list" class="list"></div>
+
+          <p class="footer-note">
+            Звук включается после первого касания страницы. Настройки сохраняются в этом браузере.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="./lite.js"></script>
+  </body>
+</html>

@@ -503,6 +503,13 @@ export default function TimerApp() {
         Звук включается после первого клика по странице — так требуют браузеры.
         <br />
         Настройки и таймеры сохраняются локально в этом браузере.
+        <br />
+        <a
+          href="lite/"
+          className="underline decoration-dotted underline-offset-2 transition hover:text-accent"
+        >
+          Облегчённая версия для старых устройств
+        </a>
       </footer>
     </div>
   );

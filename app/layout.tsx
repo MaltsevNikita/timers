@@ -29,6 +29,11 @@ export const viewport: Viewport = {
 
 const themeScript = `(function(){try{var stored=localStorage.getItem("timers:theme");var dark=stored==="dark"||(stored===null&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(dark)document.documentElement.classList.add("dark");}catch(e){}})();`;
 
+// Браузеры без поддержки ES-модулей (старые планшеты) уходят на лёгкую версию.
+const legacyRedirect = `location.replace(${JSON.stringify(
+  `${process.env.PAGES_BASE_PATH ?? ""}/lite/`,
+)});`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -37,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${jetbrains.variable} h-full antialiased`}
     >
       <head>
+        <script noModule dangerouslySetInnerHTML={{ __html: legacyRedirect }} />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col">{children}</body>
