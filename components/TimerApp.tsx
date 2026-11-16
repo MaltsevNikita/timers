@@ -11,7 +11,8 @@ import { clearMelody, readMelody, saveMelody } from "@/lib/melodyStore";
 import { alarmSound } from "@/lib/sound";
 import { readJSON, readString, STORAGE, writeJSON, writeString } from "@/lib/storage";
 import { restoreTimers } from "@/lib/timers";
-import type { SoundModeKind, TimerItem } from "@/lib/types";
+import type { SoundModeKind, TimerItem, VolumeLevel } from "@/lib/types";
+import { normalizeVolume } from "@/lib/types";
 
 interface MelodyState {
   name: string;
@@ -27,6 +28,7 @@ export default function TimerApp() {
   const [hydrated, setHydrated] = useState(false);
 
   const [soundMode, setSoundMode] = useState<SoundModeKind>("default");
+  const [volume, setVolume] = useState<VolumeLevel>(1);
   const [melody, setMelody] = useState<MelodyState | null>(null);
   const [melodyError, setMelodyError] = useState<string | null>(null);
 
@@ -54,6 +56,13 @@ export default function TimerApp() {
 
     const storedMode = readString(STORAGE.soundMode);
     if (storedMode === "custom" || storedMode === "default") setSoundMode(storedMode);
+
+    const storedVolumeRaw = readString(STORAGE.volume);
+    const storedVolume = normalizeVolume(storedVolumeRaw);
+    setVolume(storedVolume);
+    if (storedVolumeRaw !== null && storedVolumeRaw !== String(storedVolume)) {
+      writeString(STORAGE.volume, String(storedVolume));
+    }
 
     setNotifyEnabled(readString(STORAGE.notifications) === "1");
     setHydrated(true);
@@ -133,6 +142,10 @@ export default function TimerApp() {
       window.removeEventListener("keydown", unlock);
     };
   }, []);
+
+  useEffect(() => {
+    alarmSound.setVolume(volume);
+  }, [volume]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -321,6 +334,12 @@ export default function TimerApp() {
     writeString(STORAGE.soundMode, mode);
   }
 
+  function changeVolume(level: VolumeLevel) {
+    setVolume(level);
+    writeString(STORAGE.volume, String(level));
+    alarmSound.setVolume(level);
+  }
+
   async function uploadMelody(file: File) {
     if (!file.type.startsWith("audio/")) {
       setMelodyError("Это не аудиофайл. Подойдёт MP3, WAV, OGG или M4A.");
@@ -417,9 +436,11 @@ export default function TimerApp() {
             <AddTimerForm
               onAdd={addTimer}
               soundMode={soundMode}
+              volume={volume}
               melodyName={melody?.name ?? null}
               melodyError={melodyError}
               onModeChange={changeSoundMode}
+              onVolumeChange={changeVolume}
               onUpload={uploadMelody}
               onRemoveMelody={removeMelody}
               onPreview={previewSound}

@@ -12,7 +12,26 @@ class AlarmSound {
   private ctx: AudioContext | null = null;
   private loopId: number | null = null;
   private audio: HTMLAudioElement | null = null;
+  private source: MediaElementAudioSourceNode | null = null;
+  private gain: GainNode | null = null;
+  private volume = 1;
   private active = false;
+
+  /**
+   * Уровень громкости сигнала. Значения выше 1 работают только через
+   * Web Audio (GainNode): обычный audio.volume ограничен единицей.
+   */
+  setVolume(volume: number): void {
+    this.volume = volume > 0 ? volume : 1;
+
+    if (this.gain) {
+      this.gain.gain.value = this.volume;
+    }
+    if (this.audio) {
+      // Если GainNode недоступен, громче 100 % обычным способом не сделать.
+      this.audio.volume = this.gain ? 1 : Math.min(1, this.volume);
+    }
+  }
 
   /** Разблокировать аудио внутри пользовательского жеста. */
   unlock(): void {
@@ -54,10 +73,11 @@ class AlarmSound {
     if (mode.kind === "custom") {
       const audio = new Audio(mode.url);
       audio.loop = true;
-      audio.volume = 0.9;
       this.audio = audio;
+      this.routeThroughGain(audio);
       void audio.play().catch(() => {
         this.audio = null;
+        this.disconnectNodes();
         if (this.active) this.startChimeLoop();
       });
       return;
@@ -77,6 +97,7 @@ class AlarmSound {
       audio.removeAttribute("src");
       audio.load();
     }
+    this.disconnectNodes();
   }
 
   previewDefault(): void {
@@ -85,14 +106,76 @@ class AlarmSound {
   }
 
   previewCustom(url: string): void {
+    this.unlock();
     const audio = new Audio(url);
-    audio.volume = 0.9;
+    const nodes = this.routeThroughGain(audio);
     void audio.play().catch(() => {});
     window.setTimeout(() => {
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
+      if (nodes) {
+        try {
+          nodes.source.disconnect();
+          nodes.gain.disconnect();
+        } catch {
+          // ignore
+        }
+      }
     }, 7000);
+  }
+
+  /**
+   * Направить <audio> через GainNode, чтобы громкость могла быть выше 100 %.
+   * Возвращает узлы для последующего отключения либо null при недоступности
+   * Web Audio (тогда остаётся audio.volume, ограниченный единицей).
+   */
+  private routeThroughGain(
+    audio: HTMLAudioElement,
+  ): { source: MediaElementAudioSourceNode; gain: GainNode } | null {
+    this.unlock();
+    const ctx = this.ctx;
+    if (!ctx) {
+      audio.volume = Math.min(1, this.volume);
+      return null;
+    }
+
+    try {
+      const source = ctx.createMediaElementSource(audio);
+      const gain = ctx.createGain();
+      gain.gain.value = this.volume;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      audio.volume = 1;
+      // Для зацикленного сигнала сохраняем узлы, чтобы менять громкость на лету.
+      if (audio === this.audio) {
+        this.source = source;
+        this.gain = gain;
+      }
+      return { source, gain };
+    } catch {
+      audio.volume = Math.min(1, this.volume);
+      return null;
+    }
+  }
+
+  private disconnectNodes(): void {
+    if (this.source) {
+      try {
+        this.source.disconnect();
+      } catch {
+        // ignore
+      }
+      this.source = null;
+    }
+    if (this.gain) {
+      try {
+        this.gain.disconnect();
+      } catch {
+        // ignore
+      }
+      this.gain = null;
+    }
   }
 
   private startChimeLoop(): void {
@@ -146,7 +229,7 @@ class AlarmSound {
     oscillator.frequency.setValueAtTime(frequency, start);
 
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(peak, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(peak * this.volume, start + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
 
     oscillator.connect(gain);

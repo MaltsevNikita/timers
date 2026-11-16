@@ -5,6 +5,8 @@
 
   var TIMERS_KEY = "timers:list:v1";
   var SOUND_KEY = "timers:sound-mode:v1";
+  var VOLUME_KEY = "timers:volume:v1";
+  var VOLUMES = [1, 1.25, 1.5, 2];
   var MIN_MINUTES = 1;
   var MAX_MINUTES = 180;
   var ALARM_REPEAT_MS = 2600;
@@ -13,12 +15,15 @@
 
   var timers = [];
   var soundMode = "default";
+  var volume = 1;
   var melodyUrl = null;
   var melodyName = null;
 
   var chimeCtx = null;
   var chimeLoop = null;
   var customAudio = null;
+  var customSource = null;
+  var customGain = null;
   var alarmActive = false;
 
   var listEl;
@@ -184,7 +189,7 @@
       oscillator.type = "sine";
       oscillator.frequency.setValueAtTime(frequency, start);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(peak, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(peak * volume, start + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
       oscillator.connect(gain);
       gain.connect(ctx.destination);
@@ -222,6 +227,70 @@
       }
       customAudio = null;
     }
+    if (customSource) {
+      try {
+        customSource.disconnect();
+      } catch (error) {
+        /* ignore */
+      }
+      customSource = null;
+    }
+    if (customGain) {
+      try {
+        customGain.disconnect();
+      } catch (error) {
+        /* ignore */
+      }
+      customGain = null;
+    }
+  }
+
+  /* Усиление громкости выше 100 %: <audio> -> GainNode -> выход. */
+  function routeThroughGain(audio) {
+    var ctx = resumeCtx();
+    if (!ctx) return null;
+    try {
+      var source = ctx.createMediaElementSource(audio);
+      var gain = ctx.createGain();
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      audio.volume = 1;
+      return { source: source, gain: gain };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function updateVolumeUi() {
+    var buttons = byId("volume").getElementsByTagName("button");
+    for (var i = 0; i < buttons.length; i++) {
+      var value = parseFloat(buttons[i].getAttribute("data-volume"));
+      buttons[i].className = "vol" + (value === volume ? " active" : "");
+    }
+  }
+
+  function setVolume(next) {
+    var value = parseFloat(next);
+    var allowed = false;
+    for (var i = 0; i < VOLUMES.length; i++) {
+      if (VOLUMES[i] === value) allowed = true;
+    }
+    volume = allowed ? value : 1;
+
+    try {
+      localStorage.setItem(VOLUME_KEY, String(volume));
+    } catch (error) {
+      /* ignore */
+    }
+
+    if (customGain) {
+      customGain.gain.value = volume;
+    } else if (customAudio) {
+      customAudio.volume = Math.min(1, volume);
+    }
+
+    updateVolumeUi();
   }
 
   function stopAlarm() {
@@ -250,16 +319,23 @@
       try {
         customAudio = new Audio(melodyUrl);
         customAudio.loop = true;
+        var routed = routeThroughGain(customAudio);
+        if (routed) {
+          customSource = routed.source;
+          customGain = routed.gain;
+        } else {
+          customAudio.volume = Math.min(1, volume);
+        }
         var promise = customAudio.play();
         if (promise && promise.catch) {
           promise.catch(function () {
-            customAudio = null;
+            stopCustomAudio();
             if (alarmActive) startChimeLoop();
           });
         }
         return;
       } catch (error) {
-        customAudio = null;
+        stopCustomAudio();
       }
     }
 
@@ -291,11 +367,17 @@
     if (soundMode === "custom" && melodyUrl) {
       try {
         var audio = new Audio(melodyUrl);
+        var routed = routeThroughGain(audio);
+        if (!routed) audio.volume = Math.min(1, volume);
         audio.play();
         setTimeout(function () {
           try {
             audio.pause();
             audio.src = "";
+            if (routed) {
+              routed.source.disconnect();
+              routed.gain.disconnect();
+            }
           } catch (error) {
             /* ignore */
           }
@@ -794,6 +876,13 @@
       previewSound();
     };
 
+    var volumeButtons = byId("volume").getElementsByTagName("button");
+    for (var v = 0; v < volumeButtons.length; v++) {
+      volumeButtons[v].onclick = function () {
+        setVolume(this.getAttribute("data-volume"));
+      };
+    }
+
     byId("file").onchange = function (event) {
       var input = event.target;
       var file = input.files && input.files[0];
@@ -890,9 +979,19 @@
       /* ignore */
     }
 
+    try {
+      var storedVolume = parseFloat(localStorage.getItem(VOLUME_KEY));
+      for (var v = 0; v < VOLUMES.length; v++) {
+        if (VOLUMES[v] === storedVolume) volume = storedVolume;
+      }
+    } catch (error) {
+      /* ignore */
+    }
+
     bindEvents();
     renderList();
     updateSoundUi();
+    updateVolumeUi();
 
     loadMelody(function (record) {
       if (!record || !record.blob) return;

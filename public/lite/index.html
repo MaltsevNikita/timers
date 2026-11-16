@@ -76,6 +76,14 @@
                 <button type="button" id="mode-custom" class="seg">Своя мелодия</button>
               </div>
 
+              <span class="field-label">Громкость сигнала</span>
+              <div id="volume" class="volume">
+                <button type="button" class="vol" data-volume="1">100&nbsp;%</button>
+                <button type="button" class="vol" data-volume="1.25">125&nbsp;%</button>
+                <button type="button" class="vol" data-volume="1.5">150&nbsp;%</button>
+                <button type="button" class="vol" data-volume="2">200&nbsp;%</button>
+              </div>
+
               <div id="melody-row" class="melody-row" hidden>
                 <span id="melody-name" class="melody-name"></span>
                 <button type="button" id="melody-remove" class="link-btn danger-link">
@@ -89,7 +97,10 @@
               </label>
 
               <p id="sound-error" class="hint error" hidden></p>
-              <p class="hint">MP3, WAV, OGG или M4A до 20 МБ. Файл хранится в браузере.</p>
+              <p class="hint">
+                MP3, WAV, OGG или M4A до 20 МБ. Файл хранится в браузере. Громкость выше 100 % —
+                усиление сигнала.
+              </p>
             </div>
           </form>
         </div>

@@ -1,6 +1,7 @@
 export const STORAGE = {
   timers: "timers:list:v1",
   soundMode: "timers:sound-mode:v1",
+  volume: "timers:volume:v1",
   notifications: "timers:notifications:v1",
   theme: "timers:theme",
 } as const;

@@ -3,13 +3,16 @@
 import { useRef } from "react";
 import { MusicIcon, PlayIcon, UploadIcon, VolumeIcon, XIcon } from "@/components/Icons";
 import { cn } from "@/lib/cn";
-import type { SoundModeKind } from "@/lib/types";
+import type { SoundModeKind, VolumeLevel } from "@/lib/types";
+import { VOLUME_LEVELS } from "@/lib/types";
 
 interface SoundSettingsProps {
   mode: SoundModeKind;
+  volume: VolumeLevel;
   melodyName: string | null;
   error: string | null;
   onModeChange: (mode: SoundModeKind) => void;
+  onVolumeChange: (volume: VolumeLevel) => void;
   onUpload: (file: File) => void;
   onRemove: () => void;
   onPreview: () => void;
@@ -17,9 +20,11 @@ interface SoundSettingsProps {
 
 export function SoundSettings({
   mode,
+  volume,
   melodyName,
   error,
   onModeChange,
+  onVolumeChange,
   onUpload,
   onRemove,
   onPreview,
@@ -73,6 +78,33 @@ export function SoundSettings({
         </button>
       </div>
 
+      <div className="mt-3">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-xs font-medium text-muted">Громкость</span>
+          <span className="text-xs font-semibold text-accent tabular-nums">
+            {Math.round(volume * 100)} %
+          </span>
+        </div>
+        <div className="grid grid-cols-4 gap-1 rounded-2xl bg-foreground/5 p-1 dark:bg-white/10">
+          {VOLUME_LEVELS.map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => onVolumeChange(level)}
+              aria-pressed={volume === level}
+              className={cn(
+                "h-8 cursor-pointer rounded-xl text-xs font-medium tabular-nums transition",
+                volume === level
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted hover:text-foreground",
+              )}
+            >
+              {Math.round(level * 100)} %
+            </button>
+          ))}
+        </div>
+      </div>
+
       {melodyName ? (
         <div className="mt-3 flex items-center gap-2 rounded-xl border border-line bg-background/50 px-3 py-2">
           <MusicIcon size={15} className="shrink-0 text-accent" />
@@ -114,7 +146,8 @@ export function SoundSettings({
       {error ? <p className="mt-2 text-xs text-rose-500">{error}</p> : null}
 
       <p className="mt-2 text-[11px] leading-relaxed text-muted/80">
-        MP3, WAV, OGG или M4A до 20 МБ. Файл хранится только в этом браузере.
+        MP3, WAV, OGG или M4A до 20 МБ. Файл хранится только в этом браузере. Громкость выше
+        100 % усиливает сигнал через Web Audio.
       </p>
     </div>
   );

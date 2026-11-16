@@ -317,6 +317,33 @@ a {
   cursor: default;
 }
 
+.volume {
+  display: flex;
+  padding: 3px;
+  background: #f1efea;
+  border-radius: 10px;
+}
+
+.vol {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+  margin: 0 2px;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6c6f79;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vol.active {
+  background: #ffffff;
+  color: #16171b;
+}
+
 .melody-row {
   margin-top: 9px;
   padding: 7px 9px;
@@ -558,11 +585,13 @@ a {
     border-color: #2a2d35;
   }
 
-  .segmented {
+  .segmented,
+  .volume {
     background: #1d2027;
   }
 
-  .seg {
+  .seg,
+  .vol {
     color: #9aa1ad;
   }
 
@@ -608,7 +637,8 @@ a {
     color: #ff8a63;
   }
 
-  .seg.active {
+  .seg.active,
+  .vol.active {
     background: #2a2d35;
   }
 

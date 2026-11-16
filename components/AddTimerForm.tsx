@@ -5,16 +5,18 @@ import { MinusIcon, PlusIcon } from "@/components/Icons";
 import { SoundSettings } from "@/components/SoundSettings";
 import { cn } from "@/lib/cn";
 import { clampMinutes, MAX_MINUTES, MIN_MINUTES } from "@/lib/format";
-import type { SoundModeKind } from "@/lib/types";
+import type { SoundModeKind, VolumeLevel } from "@/lib/types";
 
 const PRESETS = [1, 5, 10, 25, 45];
 
 interface AddTimerFormProps {
   onAdd: (name: string, minutes: number) => void;
   soundMode: SoundModeKind;
+  volume: VolumeLevel;
   melodyName: string | null;
   melodyError: string | null;
   onModeChange: (mode: SoundModeKind) => void;
+  onVolumeChange: (volume: VolumeLevel) => void;
   onUpload: (file: File) => void;
   onRemoveMelody: () => void;
   onPreview: () => void;
@@ -23,9 +25,11 @@ interface AddTimerFormProps {
 export function AddTimerForm({
   onAdd,
   soundMode,
+  volume,
   melodyName,
   melodyError,
   onModeChange,
+  onVolumeChange,
   onUpload,
   onRemoveMelody,
   onPreview,
@@ -133,9 +137,11 @@ export function AddTimerForm({
 
       <SoundSettings
         mode={soundMode}
+        volume={volume}
         melodyName={melodyName}
         error={melodyError}
         onModeChange={onModeChange}
+        onVolumeChange={onVolumeChange}
         onUpload={onUpload}
         onRemove={onRemoveMelody}
         onPreview={onPreview}
