@@ -22,12 +22,25 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
+    // На телефонах и планшетах приложение по умолчанию тёмное.
+    { media: "(pointer: coarse)", color: "#0a0b0e" },
     { media: "(prefers-color-scheme: light)", color: "#f4f3ef" },
     { media: "(prefers-color-scheme: dark)", color: "#0a0b0e" },
   ],
 };
 
-const themeScript = `(function(){try{var stored=localStorage.getItem("timers:theme");var dark=stored==="dark"||(stored===null&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(dark)document.documentElement.classList.add("dark");}catch(e){}})();`;
+const themeScript = `(function(){try{
+var stored=localStorage.getItem("timers:theme");
+var mq=window.matchMedia;
+var dark;
+if(stored==="dark"){dark=true;}
+else if(stored==="light"){dark=false;}
+else{
+  var mobile=!!(mq&&(mq("(pointer: coarse)").matches||mq("(max-width: 640px)").matches));
+  dark=mobile||!!(mq&&mq("(prefers-color-scheme: dark)").matches);
+}
+if(dark)document.documentElement.classList.add("dark");
+}catch(e){}})();`;
 
 // Старые браузеры (включая Chrome 61–110) уходят на лёгкую ES5-версию:
 // проверяем поддержку color-mix(), на которую рассчитан Tailwind 4 и Next 16.
